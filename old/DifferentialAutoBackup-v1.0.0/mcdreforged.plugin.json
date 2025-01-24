@@ -1,0 +1,12 @@
+{
+    "id": "differential_auto_backup",
+    "version": "1.0.0",
+    "name": "Differential Auto Backup",
+    "description": {
+        "zh_cn": "对已更改的存档文件进行备份"
+    },
+    "author": [
+        "noeru_desu"
+    ],
+    "link": "https://github.com/aruCraftR/MCDReforgedPlugins"
+}

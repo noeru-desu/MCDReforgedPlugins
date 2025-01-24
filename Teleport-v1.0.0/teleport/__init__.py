@@ -132,7 +132,7 @@ def check_request(source_player, target_player):
     elif source_player in request_dict:
         return f"§c你已有一个请求发送给§e{request_dict[source_player].target_player}"
     elif target_player in requested_dict:
-        return f"§c请稍等, 对方正在处理§e{requested_dict[target_player].target_player}§c的传送请求"
+        return f"§c请稍等, 对方正在处理§e{requested_dict[target_player].source_player}§c的传送请求"
 
 
 def tpa_command(source: CommandSource, target_player):

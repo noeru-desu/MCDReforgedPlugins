@@ -1,3 +1,10 @@
+"""
+Author       : noeru_desu
+Date         : 2021-12-09 06:22:52
+LastEditors  : noeru_desu
+LastEditTime : 2022-07-08 13:46:22
+Description  : 
+"""
 '''
 Author       : noeru_desu
 Date         : 2021-12-03 20:00:34
@@ -5,20 +12,33 @@ LastEditors  : noeru_desu
 LastEditTime : 2021-12-03 20:41:20
 Description  : 在线玩家API
 '''
+from re import match
+from mcdreforged.api.all import PluginServerInterface
+
 
 online_player = []
 online_bot = []
 all_online = []
 
 
-def on_load(server, old):
+def on_load(server: PluginServerInterface, old):
     global online_player, online_bot, all_online
     try:
         online_player = old.online_player
         online_bot = old.online_bot
         all_online = old.all_online
     except Exception:
-        pass
+        server.execute('list')
+
+
+def on_info(server: PluginServerInterface, info):
+    global all_online
+    if not info.is_user:
+        content = info.content
+        if match(r'There are [1-9][0-9]* of a max of [0-9]+ players online:', content) is not None:
+            online_list = content.split(': ')[1].split(', ')
+            all_online = online_list
+            server.logger.info(f'已更新OnlinePlayerAPI在线玩家列表: {online_list}')
 
 
 def on_server_stop(server, return_code):
