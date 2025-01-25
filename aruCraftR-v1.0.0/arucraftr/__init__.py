@@ -21,7 +21,7 @@ async def on_load(server: PluginServerInterface, prev_module: Optional[Any]):
 
 
 async def on_unload(server: PluginServerInterface):
-    shared.ws_future.cancel('插件卸载')
+    shared.ws_future.cancel()
     if shared.ws_connection:
         await shared.ws_connection.close(reason='插件卸载')
 
