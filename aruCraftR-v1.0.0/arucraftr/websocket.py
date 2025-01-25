@@ -1,5 +1,6 @@
 
 import asyncio
+from traceback import print_exc
 from typing import Any, NamedTuple, Sequence
 import websockets
 import json as jsonlib
@@ -25,7 +26,7 @@ async def ws_loop():
         except asyncio.CancelledError as e:
             raise e from e
         except Exception:
-            pass
+            print_exc(limit=3)
         else:
             tell_admin(RText('ws已连接', color=RColor.green))
             await recv_msg(shared.ws_connection)
