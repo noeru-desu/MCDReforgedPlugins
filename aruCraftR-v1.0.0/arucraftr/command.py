@@ -30,26 +30,12 @@ HELP = f"""{RTextList(hr, RText('插件帮助信息', color=RColor.dark_aqua), R
 def register_commands(server: PluginServerInterface):
     server.register_command(
         admin_literal(CMD).
+        then(Literal('help').runs(lambda src: src.reply(HELP))).
+        then(Literal('reload').runs(reload_config)).
+        then(Literal('reconnect').runs(reconnect_ws)).
         then(
-            Text('help').runs(lambda src: src.reply(HELP))
-        )
-    )
-    server.register_command(
-        admin_literal(CMD).
-        then(
-            Text('reload').runs(reload_config)
-        )
-    )
-    server.register_command(
-        admin_literal(CMD).
-        then(
-            Text('reconnect').runs(reconnect_ws)
-        )
-    )
-    server.register_command(
-        console_literal(CMD).
-        then(
-            Text('exec_json').then(
+            console_literal('exec_json').
+            then(
                 GreedyText('json').runs(exec_json)
             )
         )
