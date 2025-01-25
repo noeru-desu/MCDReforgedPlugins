@@ -30,6 +30,7 @@ async def ws_loop():
             tell_admin(RText('ws已连接', color=RColor.green))
             await recv_msg(shared.ws_connection)
             continue
+        shared.plg_server_inst.logger.info('连接失败, 重试')
         await asyncio.sleep(3)
 
 
