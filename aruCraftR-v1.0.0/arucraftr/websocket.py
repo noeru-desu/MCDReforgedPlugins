@@ -41,25 +41,27 @@ class WebSocketMessage(NamedTuple):
 
 
 async def recv_msg(websocket: websockets.ClientConnection):
-    try:
-        while True:
+    while True:
+        try:
             try:
+                json = jsonlib.loads(await websocket.recv())
+                tell_admin(RText(f'来自ws的消息({type(json)}): {json}', color=RColor.gray))
                 message = WebSocketMessage(**jsonlib.loads(await websocket.recv()))
             except jsonlib.JSONDecodeError as e:
                 shared.plg_server_inst.logger.warning(f'[aruCraftR] 加载来自ws的json时出现问题: {repr(e)}')
                 continue
-            tell_admin(RText(f'来自ws的消息: {message}', color=RColor.gray))
             match message.msg_type:
                 case 'command':
                     exec_command(message.content) # type: ignore
                 case 'json':
                     exec_json(message.content)
-    except websockets.ConnectionClosed:
-        tell_admin(RText('ws连接中断, 正在尝试重连', color=RColor.red))
-    except asyncio.CancelledError as e:
-        raise e from e
-    except Exception as e:
-        tell_admin(RText(f'ws处理时出现意外错误: {repr(e)}', color=RColor.red))
+        except asyncio.CancelledError as e:
+            raise e from e
+        except websockets.ConnectionClosed:
+            tell_admin(RText('ws连接中断, 正在尝试重连', color=RColor.red))
+            return
+        except Exception as e:
+            tell_admin(RText(f'ws处理时出现意外错误: {repr(e)}', color=RColor.red))
 
 
 def exec_json(json: Any):
