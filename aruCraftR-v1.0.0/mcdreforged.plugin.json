@@ -1,0 +1,15 @@
+{
+    "id": "arucraftr",
+    "version": "1.0.0",
+    "name": "aruCraftR",
+    "description": {
+        "zh_cn": "aruCraftR内部插件"
+    },
+    "author": [
+        "noeru_desu"
+    ],
+    "link": "https://github.com/aruCraftR/MCDReforgedPlugins",
+    "dependencies": {
+        "mcdreforged": ">=2.14.3"
+    }
+}
