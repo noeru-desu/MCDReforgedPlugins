@@ -13,6 +13,7 @@ from .websocket import ws_loop
 async def on_load(server: PluginServerInterface, prev_module: Optional[Any]):
     shared.plg_server_inst = server
     shared.config = server.load_config_simple(target_class=Config)
+    server.save_config_simple(shared.config)
     register_commands(server)
     if shared.config.info_filter: # type: ignore
         CustomInfoFilter.rebuild_filter_cache(shared.config.info_filter) # type: ignore
