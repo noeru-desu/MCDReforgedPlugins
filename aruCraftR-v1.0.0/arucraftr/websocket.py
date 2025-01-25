@@ -56,6 +56,10 @@ async def recv_msg(websocket: websockets.ClientConnection):
                     exec_json(message.content)
     except websockets.ConnectionClosed:
         tell_admin(RText('ws连接中断, 正在尝试重连', color=RColor.red))
+    except asyncio.CancelledError as e:
+        raise e from e
+    except Exception as e:
+        tell_admin(RText(f'ws处理时出现意外错误: {repr(e)}', color=RColor.red))
 
 
 def exec_json(json: Any):
