@@ -26,7 +26,7 @@ async def ws_loop():
         except asyncio.CancelledError as e:
             raise e from e
         except Exception:
-            print_exc(limit=3)
+            pass
         else:
             tell_admin(RText('ws已连接', color=RColor.green))
             await recv_msg(shared.ws_connection)
