@@ -38,12 +38,23 @@ class CustomInfoFilter(InfoFilter):
     def rebuild_filter_cache(cls, filters: list[InfoFilterConfig]):
         filter_cache = []
         for i in filters:
-            target = i.target
             match i.method:
                 case InfoFilterMethod.keyword:
-                    filter_cache.append(lambda x: target in x)
+                    filter_cache.append(cls.keyword_func(i.target))
                 case InfoFilterMethod.startswith:
-                    filter_cache.append(lambda x: x.startswith(target))
+                    filter_cache.append(cls.startswith_func(i.target))
                 case InfoFilterMethod.endswith:
-                    filter_cache.append(lambda x: x.endswith(target))
+                    filter_cache.append(cls.endswith_func(i.target))
         cls.filter_cache = filter_cache
+
+    @staticmethod
+    def keyword_func(target):
+        return lambda x: target in x
+
+    @staticmethod
+    def startswith_func(target):
+        return lambda x: x.startswith(target)
+
+    @staticmethod
+    def endswith_func(target):
+        return lambda x: x.endswith(target)
