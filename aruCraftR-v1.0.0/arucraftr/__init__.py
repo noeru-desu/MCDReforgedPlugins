@@ -30,9 +30,8 @@ async def on_unload(server: PluginServerInterface):
 class CustomInfoFilter(InfoFilter):
     filter_cache: list[Callable[[str], bool]]
     def filter_server_info(self, info: Info) -> bool:
-        if (content := info.content) is None:
+        if info.is_from_console or (content := info.raw_content) is None:
             return True
-        print(self.filter_cache[0](content))
         return not any(i(content) for i in self.filter_cache) # type: ignore
 
     @classmethod
