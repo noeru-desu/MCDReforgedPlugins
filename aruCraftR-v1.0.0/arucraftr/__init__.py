@@ -32,8 +32,7 @@ class CustomInfoFilter(InfoFilter):
     def filter_server_info(self, info: Info) -> bool:
         if (content := info.content) is None:
             return True
-        print(shared.config.info_filter)
-        print(self.filter_cache)
+        print(self.filter_cache[0](content))
         return not any(i(content) for i in self.filter_cache) # type: ignore
 
     @classmethod
