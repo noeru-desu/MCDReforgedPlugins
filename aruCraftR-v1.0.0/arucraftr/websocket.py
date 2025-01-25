@@ -47,6 +47,8 @@ async def recv_msg(websocket: websockets.ClientConnection):
                 message = WebSocketMessage(**jsonlib.loads(await websocket.recv()))
             except jsonlib.JSONDecodeError as e:
                 shared.plg_server_inst.logger.warning(f'[aruCraftR] 加载来自ws的json时出现问题: {repr(e)}')
+                continue
+            tell_admin(RText(f'来自ws的消息: {message}', color=RColor.gray))
             match message.msg_type:
                 case 'command':
                     exec_command(message.content) # type: ignore

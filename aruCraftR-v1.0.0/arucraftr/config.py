@@ -19,3 +19,4 @@ class Config(Serializable):
     token: str = 'xxx'
     name: str = '请更改名称'
     info_filter: list[InfoFilterConfig] = [InfoFilterConfig(method=InfoFilterMethod.startswith, target='example')]
+    debug: bool = False
