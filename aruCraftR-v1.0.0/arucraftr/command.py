@@ -56,7 +56,7 @@ async def reload_config(src: CommandSource):
 
 
 async def reconnect_ws(src: CommandSource):
-    if hasattr(shared, 'ws_connection'):
+    if shared.ws_connection is not None:
         await shared.ws_connection.close(reason='插件卸载')
         src.reply(RText('已断开当前ws连接', color=RColor.yellow))
     else:

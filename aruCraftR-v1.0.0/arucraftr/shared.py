@@ -14,4 +14,4 @@ plg_server_inst: 'PluginServerInterface'
 std_server_inst: 'ServerInterface'
 config: 'Config'
 ws_future: 'Future'
-ws_connection: 'ClientConnection'
+ws_connection: 'ClientConnection' = None # type: ignore

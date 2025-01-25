@@ -22,7 +22,7 @@ async def on_load(server: PluginServerInterface, prev_module: Optional[Any]):
 
 async def on_unload(server: PluginServerInterface):
     shared.ws_future.cancel()
-    if hasattr(shared, 'ws_connection'):
+    if shared.ws_connection is not None:
         await shared.ws_connection.close(reason='插件卸载')
 
 
