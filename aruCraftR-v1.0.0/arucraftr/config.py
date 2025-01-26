@@ -15,7 +15,7 @@ class InfoFilterConfig(Serializable):
 
 
 class Config(Serializable):
-    ws_server: str = 'ws://127.0.0.1'
+    ws_server: str = 'ws://127.0.0.1:8080'
     token: str = 'xxx'
     name: str = '请更改名称'
     info_filter: list[InfoFilterConfig] = [InfoFilterConfig(method=InfoFilterMethod.startswith, target='example')]

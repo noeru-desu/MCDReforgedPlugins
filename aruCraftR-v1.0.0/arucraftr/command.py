@@ -3,11 +3,11 @@ import json as jsonlib
 
 from mcdreforged.api.types import PluginServerInterface, CommandSource
 from mcdreforged.api.rtext import RText, RColor, RTextList
-from mcdreforged.api.command import Text, GreedyText, Literal
+from mcdreforged.api.command import GreedyText, Literal, Text
 from mcdreforged.command.builder.tools import Requirements
 
 from . import shared
-from .config import Config
+from .event import ArcEvent, dispatch_event
 from .websocket import exec_json as _exec_json
 
 CMD = '!!acr'
@@ -21,7 +21,7 @@ def console_literal(literal: str):
 hr = RText('-----', color=RColor.gray)
 cmd = RText(CMD)
 
-HELP = f"""{RTextList(hr, RText('插件帮助信息', color=RColor.dark_aqua), RText('插件帮助信息', color=RColor.gray), hr)}
+HELP = f"""{RTextList(hr, RText('aruCraftR', color=RColor.dark_aqua), RText('插件帮助信息', color=RColor.gray), hr)}
 {RTextList(cmd, ' ', RText('reload', color=RColor.gold), RText(' | 重载配置文件', color=RColor.gray))}
 {RTextList(cmd, ' ', RText('reconnect', color=RColor.gold), RText(' | 重连nonebot插件', color=RColor.gray))}
 """
@@ -29,30 +29,30 @@ HELP = f"""{RTextList(hr, RText('插件帮助信息', color=RColor.dark_aqua), R
 
 def register_commands(server: PluginServerInterface):
     server.register_command(
-        admin_literal(CMD).
+        admin_literal(CMD).runs(lambda src: src.reply(HELP)).
         then(Literal('help').runs(lambda src: src.reply(HELP))).
-        then(Literal('reload').runs(reload_config)).
+        then(Literal('reload').runs(reload_plg)).
         then(Literal('reconnect').runs(reconnect_ws)).
         then(
-            console_literal('exec_json').
+            console_literal('exec').
             then(
-                GreedyText('json').runs(exec_json)
+                Literal('json').then(
+                    GreedyText('json').runs(exec_json)
+                )
+            ).
+            then(
+                Literal('event').then(
+                    Text('event_name').then(GreedyText('kwargs').runs(exec_event))
+                )
             )
         )
     )
 
 
-async def reload_config(src: CommandSource):
-    old_cfg = shared.config
-    try:
-        shared.config = shared.plg_server_inst.load_config_simple(target_class=Config, failure_policy='raise')
-    except Exception as e:
-        src.reply(RText(f'配置文件重载失败: {repr(e)}', color=RColor.red))
-    else:
-        src.reply(RText('已重载配置文件', color=RColor.green))
-    if old_cfg.ws_server != shared.config.ws_server or old_cfg.token != shared.config.token or old_cfg.name != shared.config.name: # type: ignore
-        src.reply(RText('由于配置文件更改, 自动重连ws', color=RColor.yellow))
-        await reconnect_ws(src)
+async def reload_plg(src: CommandSource):
+    src.reply(RText('正在重载插件', color=RColor.yellow))
+    if shared.plg_server_inst.reload_plugin(shared.plg_server_inst.get_self_metadata().id):
+        src.reply(RText('重载成功', color=RColor.green))
 
 
 async def reconnect_ws(src: CommandSource):
@@ -64,5 +64,20 @@ async def reconnect_ws(src: CommandSource):
 
 
 def exec_json(src: CommandSource, ctx: dict):
-    if (result := _exec_json(jsonlib.loads(ctx['json']))) is not None:
-        src.reply(result)
+    try:
+        json = jsonlib.loads(ctx['json'])
+    except jsonlib.JSONDecodeError as e:
+        src.reply(f'解析json时出现错误: {repr(e)}')
+    else:
+        if (result := _exec_json(json)) is not None:
+            src.reply(result)
+
+
+def exec_event(src: CommandSource, ctx: dict):
+    if (event := ArcEvent.get(ctx['event_name'])) is not None and ctx['kwargs']:
+        try:
+            kwargs = jsonlib.loads(ctx['kwargs'])
+        except jsonlib.JSONDecodeError as e:
+            src.reply(f'解析事件参数时出现错误: {repr(e)}')
+        else:
+            dispatch_event(event, kwargs)
