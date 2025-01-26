@@ -1,6 +1,7 @@
 
 import json as jsonlib
 
+from traceback import format_exc
 from mcdreforged.api.types import PluginServerInterface, CommandSource
 from mcdreforged.api.rtext import RText, RColor, RTextList
 from mcdreforged.api.command import GreedyText, Literal, Text
@@ -21,9 +22,14 @@ def console_literal(literal: str):
 hr = RText('-----', color=RColor.gray)
 cmd = RText(CMD)
 
-HELP = f"""{RTextList(hr, RText('aruCraftR', color=RColor.dark_aqua), RText('插件帮助信息', color=RColor.gray), hr)}
+HELP = f"""{RTextList(hr, RText('aruCraftR', color=RColor.dark_aqua), RText(' 插件帮助信息', color=RColor.gray), hr)}
 {RTextList(cmd, ' ', RText('reload', color=RColor.gold), RText(' | 重载配置文件', color=RColor.gray))}
 {RTextList(cmd, ' ', RText('reconnect', color=RColor.gold), RText(' | 重连nonebot插件', color=RColor.gray))}
+{RTextList(cmd, ' ', RText('debug', color=RColor.gold), RText(' | 调试相关', color=RColor.gray))}
+"""
+
+DEBUG_HELP = f"""{RTextList(hr, RText('aruCraftR', color=RColor.dark_aqua), RText(' Debug帮助信息', color=RColor.gray), hr)}
+{RTextList(cmd, ' debug ', RText('event <事件名>', color=RColor.gold), RText(' | 测试事件发送', color=RColor.gray))}
 """
 
 
@@ -33,6 +39,10 @@ def register_commands(server: PluginServerInterface):
         then(Literal('help').runs(lambda src: src.reply(HELP))).
         then(Literal('reload').runs(reload_plg)).
         then(Literal('reconnect').runs(reconnect_ws)).
+        then(
+            Literal('debug').runs(lambda src: src.reply(DEBUG_HELP)).
+            then(Literal('event').then(Text('event_name').runs(debug_event)))
+        ).
         then(
             console_literal('exec').
             then(
@@ -61,6 +71,17 @@ async def reconnect_ws(src: CommandSource):
         src.reply(RText('已断开当前ws连接', color=RColor.yellow))
     else:
         src.reply(RText('当前没有ws连接', color=RColor.yellow))
+
+
+async def debug_event(src: CommandSource, ctx: dict):
+    try:
+        if (event := ArcEvent.get(ctx['event_name'])) is None:
+            src.reply(RText(f'事件ID不存在: {ctx['event_name']}', color=RColor.red))
+        await event.debug_report()
+    except Exception:
+        src.reply(RText(f'出现错误: {format_exc(limit=5)}', color=RColor.red))
+    else:
+        src.reply(RText(f'已发送事件{ctx['event_name']}', color=RColor.green))
 
 
 def exec_json(src: CommandSource, ctx: dict):
