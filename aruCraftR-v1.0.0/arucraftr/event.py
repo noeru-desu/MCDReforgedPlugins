@@ -12,15 +12,18 @@ from .websocket import WebSocketMessage, send_msg
 events = {}
 
 
-class Event(PluginEvent):
+class WsEvent(PluginEvent):
     def __init__(self, event_id: str, debug_kwargs: Optional[dict] = None):
         super().__init__(event_id)
         self.debug_kwargs = {} if debug_kwargs is None else debug_kwargs
 
 
 class ArcEvent(Enum):
-    server_startup = Event('arc.server_startup')
-    server_stop = Event('arc.server_stop', {'code': '测试'})
+    server_startup = WsEvent('server_startup')
+    server_stop = WsEvent('server_stop', {'code': '测试'})
+    player_joined = WsEvent('player_joined', {'player': '测试', 'is_bot': True})
+    player_left = WsEvent('player_left', {'player': '测试'})
+    update_player_list = WsEvent('update_player_list', {'player_list': [('测试', True)]})
 
     @classmethod
     def get(cls, name: str) -> Optional['ArcEvent']:

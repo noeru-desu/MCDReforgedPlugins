@@ -1,5 +1,6 @@
 
 import asyncio
+import re
 from typing import Any, Optional
 
 from mcdreforged.api.types import PluginServerInterface, Info
@@ -10,6 +11,7 @@ from .config import Config
 from .websocket import WebSocketMessage, send_msg, ws_loop
 from .info_filter import CustomInfoFilter
 from .event import ArcEvent
+from .utils import tell_admin
 
 
 async def on_load(server: PluginServerInterface, prev_module: Optional[Any]):
@@ -47,9 +49,40 @@ async def on_user_info(server: PluginServerInterface, info: Info):
     info.cancel_send_to_server()
 
 
-def on_player_joined(server: PluginServerInterface, player: str, info: Info):
+bots = set()
+
+
+async def on_player_joined(server: PluginServerInterface, player: str, info: Info):
     try:
         if server.get_permission_level(player) >= 3:
             server.execute(f'tag {player} add admin')
     except Exception as e:
         shared.plg_server_inst.logger.warning(f'尝试检测{player}的权限时失败: {repr(e)}')
+    await ArcEvent.player_joined.report(player=player, is_bot=False)
+    # bot检测并记录到bots
+
+
+async def on_player_left(server: PluginServerInterface, player: str):
+    if player in bots:
+        bots.remove(player)
+    await ArcEvent.player_left.report(player=player)
+
+
+
+list_re = re.compile(r'There are \d+ of a max of \d+ players online: (.+)')
+
+async def on_info(server: PluginServerInterface, info: Info):
+    if (not info.is_from_server) or info.content is None:
+        return
+    if info.content.startswith('There'):
+        await match_online_list(info.content)
+
+
+async def match_online_list(content: str):
+    regex = re.match(list_re, content)
+    players_str = regex.group()
+    try:
+        players = (i.strip(' ') for i in players_str.split(','))
+    except (ValueError, AttributeError) as e:
+        tell_admin(f'玩家列表解析失败, 匹配目标[{players_str}]: {repr(e)}')
+    await ArcEvent.update_player_list.report(player_list=[[i, i in bots] for i in players])
