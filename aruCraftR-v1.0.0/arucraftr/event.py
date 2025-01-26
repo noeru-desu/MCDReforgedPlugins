@@ -2,6 +2,7 @@
 
 from enum import Enum
 from typing import Any, Optional, Tuple
+import json as jsonlib
 
 from mcdreforged.api.event import LiteralEvent
 
@@ -21,7 +22,10 @@ class ArcEvent(Enum):
         return cls.__members__.get(name)
 
     async def report(self, **kwargs):
-        await send_msg(WebSocketMessage('event', {'name': self.name, 'kwargs': kwargs}))
+        await send_msg(WebSocketMessage('event', self.data(kwargs)))
+
+    def data(self, kwargs) -> dict:
+        return {'name': self.name, 'kwargs': kwargs}
 
 
 def dispatch_event(event: ArcEvent, kwargs: dict[str, Any]):

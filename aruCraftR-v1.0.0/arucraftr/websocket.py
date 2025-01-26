@@ -57,7 +57,7 @@ async def recv_msg(websocket: websockets.ClientConnection):
                 case 'command':
                     exec_command(message.content) # type: ignore
                 case 'event':
-                    dispatch_event(message.content['name'], message.content['args']) # type: ignore
+                    dispatch_event(message.content['name'], message.content['kwargs']) # type: ignore
                 case 'json':
                     exec_json(message.content)
         except asyncio.CancelledError as e:
