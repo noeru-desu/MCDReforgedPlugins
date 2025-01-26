@@ -48,5 +48,8 @@ async def on_user_info(server: PluginServerInterface, info: Info):
 
 
 def on_player_joined(server: PluginServerInterface, player: str, info: Info):
-    if server.get_permission_level(info) >= 3:
-        server.execute(f'tag {player} add admin')
+    try:
+        if server.get_permission_level(player) >= 3:
+            server.execute(f'tag {player} add admin')
+    except Exception as e:
+        shared.plg_server_inst.logger.warning(f'尝试检测{player}的权限时失败: {repr(e)}')
