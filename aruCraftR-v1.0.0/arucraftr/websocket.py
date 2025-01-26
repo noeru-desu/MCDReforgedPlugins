@@ -1,7 +1,6 @@
 
 import asyncio
-from enum import Enum
-from typing import Any, NamedTuple, Optional, Sequence
+from typing import Any, Callable, NamedTuple, Optional, Sequence
 import websockets
 import json as jsonlib
 
@@ -102,19 +101,19 @@ async def feedback_player_list():
             return
 
 
-class RequestType(Enum):
+class RequestTypes:
     player_list=feedback_player_list
 
     @classmethod
-    def get(cls, name: str) -> Optional['RequestType']:
-        return cls.__members__.get(name)
-
-    async def feedback(self):
-        await self.value()
+    def get(cls, name: str) -> Optional[Callable]:
+        try:
+            return getattr(cls, name)
+        except AttributeError:
+            return None
 
 
 async def exec_request(request_name: str):
-    if (request := RequestType.get(request_name)) is None:
+    if (feedback := RequestTypes.get(request_name)) is None:
         tell_admin(RText(f'未知请求目标: {request_name}', color=RColor.yellow))
         return
-    await request.feedback()
+    await feedback()
