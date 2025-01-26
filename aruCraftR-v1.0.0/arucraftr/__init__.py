@@ -2,12 +2,12 @@
 import asyncio
 from typing import Any, Optional
 
-from mcdreforged.api.types import PluginServerInterface
+from mcdreforged.api.types import PluginServerInterface, Info
 
 from . import shared
 from .command import register_commands
 from .config import Config
-from .websocket import ws_loop
+from .websocket import WebSocketMessage, send_msg, ws_loop
 from .info_filter import CustomInfoFilter
 from .event import ArcEvent
 
@@ -35,3 +35,11 @@ async def on_server_startup(server: PluginServerInterface):
 
 async def on_server_stop(server: PluginServerInterface, server_return_code: int):
     await ArcEvent.server_stop.report(code=server_return_code)
+
+
+async def on_user_info(server: PluginServerInterface, info: Info):
+    if info.content is None or not info.content.startswith(shared.config.forwarding_message_prefix):
+        return
+    player = '控制台' if info.player is None else info.player
+    await send_msg(WebSocketMessage('forward', f'<{player}> {info.content.lstrip('.')}'))
+    info.cancel_send_to_server()
