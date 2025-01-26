@@ -26,8 +26,3 @@ class ArcEvent(Enum):
 
     def data(self, kwargs) -> dict:
         return {'name': self.name, 'kwargs': kwargs}
-
-
-def dispatch_event(event: ArcEvent, kwargs: dict[str, Any]):
-    pass
-    # shared.plg_server_inst.dispatch_event(event.value, kwargs)

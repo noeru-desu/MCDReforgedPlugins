@@ -7,7 +7,7 @@ import json as jsonlib
 from mcdreforged.api.rtext import RText, RColor
 
 from . import shared
-from .event import dispatch_event
+# from .event import dispatch_event
 from .utils import tell_admin
 
 
@@ -57,7 +57,8 @@ async def recv_msg(websocket: websockets.ClientConnection):
                 case 'command':
                     exec_command(message.content) # type: ignore
                 case 'event':
-                    dispatch_event(message.content['name'], message.content['kwargs']) # type: ignore
+                    tell_admin(RText('暂不支持事件消息类型', color=RColor.yellow))
+                    # dispatch_event(message.content['name'], message.content['kwargs']) # type: ignore
                 case 'json':
                     exec_json(message.content)
         except asyncio.CancelledError as e:

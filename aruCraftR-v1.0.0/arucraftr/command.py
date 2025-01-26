@@ -7,7 +7,7 @@ from mcdreforged.api.command import GreedyText, Literal, Text
 from mcdreforged.command.builder.tools import Requirements
 
 from . import shared
-from .event import ArcEvent, dispatch_event
+from .event import ArcEvent
 from .websocket import exec_json as _exec_json
 
 CMD = '!!acr'
@@ -80,4 +80,5 @@ def exec_event(src: CommandSource, ctx: dict):
         except jsonlib.JSONDecodeError as e:
             src.reply(f'解析事件参数时出现错误: {repr(e)}')
         else:
-            dispatch_event(event, kwargs)
+            src.reply('暂不支持事件消息类型')
+            # dispatch_event(event, kwargs)
