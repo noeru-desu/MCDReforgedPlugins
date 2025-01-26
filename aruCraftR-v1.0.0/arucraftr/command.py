@@ -49,7 +49,7 @@ def register_commands(server: PluginServerInterface):
     )
 
 
-async def reload_plg(src: CommandSource):
+def reload_plg(src: CommandSource):
     src.reply(RText('正在重载插件', color=RColor.yellow))
     if shared.plg_server_inst.reload_plugin(shared.plg_server_inst.get_self_metadata().id):
         src.reply(RText('重载成功', color=RColor.green))
