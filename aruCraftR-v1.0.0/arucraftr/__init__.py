@@ -40,6 +40,13 @@ async def on_server_stop(server: PluginServerInterface, server_return_code: int)
 async def on_user_info(server: PluginServerInterface, info: Info):
     if info.content is None or not info.content.startswith(shared.config.forwarding_message_prefix):
         return
+    if not (msg := info.content.lstrip('.')):
+        return
     player = '控制台' if info.player is None else info.player
-    await send_msg(WebSocketMessage('forward', f'<{player}> {info.content.lstrip('.')}'))
+    await send_msg(WebSocketMessage('forward', f'<{player}> {msg}'))
     info.cancel_send_to_server()
+
+
+def on_player_joined(server: PluginServerInterface, player: str, info: Info):
+    if server.get_permission_level(info) >= 3:
+        server.execute(f'tag {player} add admin')
