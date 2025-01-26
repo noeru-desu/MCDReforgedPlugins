@@ -1,6 +1,7 @@
 
 import asyncio
-from typing import Any, NamedTuple, Sequence
+from enum import Enum
+from typing import Any, NamedTuple, Optional, Sequence
 import websockets
 import json as jsonlib
 
@@ -59,6 +60,8 @@ async def recv_msg(websocket: websockets.ClientConnection):
                 case 'event':
                     tell_admin(RText('暂不支持事件消息类型', color=RColor.yellow))
                     # dispatch_event(message.content['name'], message.content['kwargs']) # type: ignore
+                case 'request':
+                    await exec_request(message.content) # type: ignore
                 case 'json':
                     exec_json(message.content)
         except asyncio.CancelledError as e:
@@ -85,3 +88,31 @@ def exec_command(command: str | Sequence[str]):
     else:
         for i in command:
             shared.plg_server_inst.execute(i)
+
+
+async def feedback_player_list():
+    if shared.plg_server_inst.is_server_startup():
+        shared.plg_server_inst.execute('list')
+        return
+    while True:
+        await asyncio.sleep(3)
+        if shared.plg_server_inst.is_server_startup():
+            shared.plg_server_inst.execute('list')
+            return
+
+
+class RequestType(Enum):
+    player_list=feedback_player_list
+
+    @classmethod
+    def get(cls, name: str) -> Optional['RequestType']:
+        return cls.__members__.get(name)
+
+    async def feedback(self):
+        await self.value()
+
+
+async def exec_request(request_name: str):
+    if (request := RequestType.get(request_name)) is None:
+        return
+    await request.feedback()
