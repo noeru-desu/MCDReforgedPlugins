@@ -94,6 +94,7 @@ async def feedback_player_list():
     if shared.plg_server_inst.is_server_startup():
         shared.plg_server_inst.execute('list')
         return
+    shared.plg_server_inst.logger.info('正在等待服务器启动')
     while True:
         await asyncio.sleep(3)
         if shared.plg_server_inst.is_server_startup():
@@ -114,5 +115,6 @@ class RequestType(Enum):
 
 async def exec_request(request_name: str):
     if (request := RequestType.get(request_name)) is None:
+        tell_admin(RText(f'未知请求目标: {request_name}', color=RColor.yellow))
         return
     await request.feedback()
