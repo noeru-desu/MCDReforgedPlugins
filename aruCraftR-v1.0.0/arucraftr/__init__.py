@@ -71,7 +71,7 @@ async def on_player_left(server: PluginServerInterface, player: str):
 
 
 
-list_re = re.compile(r'There are \d+ of a max of \d+ players online: (.+)')
+list_re = re.compile(r'There are \d+ of a max of \d+ players online: (?P<players>.+)')
 
 async def on_info(server: PluginServerInterface, info: Info):
     if (not info.is_from_server) or info.content is None:
@@ -81,8 +81,9 @@ async def on_info(server: PluginServerInterface, info: Info):
 
 
 async def match_online_list(content: str):
-    regex = re.match(list_re, content)
-    players_str = regex.group()
+    if (regex := re.match(list_re, content)) is None:
+        return
+    players_str = regex['players']
     try:
         players = (i.strip(' ') for i in players_str.split(','))
     except (ValueError, AttributeError) as e:
