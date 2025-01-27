@@ -3,8 +3,8 @@ from typing import Callable
 
 from mcdreforged.api.types import InfoFilter, Info
 
-from .config import InfoFilterConfig, InfoFilterMethod
-from . import shared
+from arucraftr.config import InfoFilterConfig, InfoFilterMethod
+from arucraftr import shared
 
 
 class CustomInfoFilter(InfoFilter):

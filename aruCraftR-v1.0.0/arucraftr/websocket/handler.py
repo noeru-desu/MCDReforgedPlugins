@@ -1,14 +1,15 @@
 
 import asyncio
-from typing import Any, Callable, NamedTuple, Optional, Sequence
+from typing import Any, Sequence
 import websockets
 import json as jsonlib
 
 from mcdreforged.api.rtext import RText, RColor
 
-from . import shared
-# from .event import dispatch_event
-from .utils import tell_admin
+from arucraftr import shared
+from arucraftr.utils import tell_admin
+from arucraftr.websocket.event import ArcEvent
+from arucraftr.websocket.types import WebSocketMessage, RequestTypes
 
 
 async def ws_loop():
@@ -37,14 +38,6 @@ async def ws_loop():
         await asyncio.sleep(3)
 
 
-class WebSocketMessage(NamedTuple):
-    msg_type: str
-    content: str | list | dict
-
-    def json(self) -> str:
-        return jsonlib.dumps({'msg_type': self.msg_type, 'content': self.content}, separators=(',', ':'), ensure_ascii=False)
-
-
 async def recv_msg(websocket: websockets.ClientConnection):
     while True:
         try:
@@ -57,10 +50,12 @@ async def recv_msg(websocket: websockets.ClientConnection):
                 case 'command':
                     exec_command(message.content) # type: ignore
                 case 'event':
-                    tell_admin(RText('暂不支持事件消息类型', color=RColor.yellow))
-                    # dispatch_event(message.content['name'], message.content['kwargs']) # type: ignore
+                    if (event := ArcEvent.get(message.content['name'])) is not None: # type: ignore
+                        event.dispatch(message.content['kwargs']) # type: ignore
+                    else:
+                        tell_admin(RText(f'未知事件: {message.content['name']}', color=RColor.yellow)) # type: ignore
                 case 'request':
-                    await exec_request(message.content) # type: ignore
+                    await exec_feedback(message.content) # type: ignore
                 case 'json':
                     exec_json(message.content)
         except asyncio.CancelledError as e:
@@ -70,11 +65,6 @@ async def recv_msg(websocket: websockets.ClientConnection):
             return
         except Exception as e:
             tell_admin(RText(f'处理ws消息时出现意外错误: {repr(e)}', color=RColor.red))
-
-
-async def send_msg(message: WebSocketMessage):
-    if shared.ws_connection is not None and shared.ws_connection.state == websockets.State.OPEN:
-        await shared.ws_connection.send(message.json(), True)
 
 
 def exec_json(json: Any):
@@ -89,30 +79,7 @@ def exec_command(command: str | Sequence[str]):
             shared.plg_server_inst.execute(i)
 
 
-async def feedback_player_list():
-    if shared.plg_server_inst.is_server_startup():
-        shared.plg_server_inst.execute('list')
-        return
-    shared.plg_server_inst.logger.info('正在等待服务器启动')
-    while True:
-        await asyncio.sleep(3)
-        if shared.plg_server_inst.is_server_startup():
-            shared.plg_server_inst.execute('list')
-            return
-
-
-class RequestTypes:
-    player_list=feedback_player_list
-
-    @classmethod
-    def get(cls, name: str) -> Optional[Callable]:
-        try:
-            return getattr(cls, name)
-        except AttributeError:
-            return None
-
-
-async def exec_request(request_name: str):
+async def exec_feedback(request_name: str):
     if (feedback := RequestTypes.get(request_name)) is None:
         tell_admin(RText(f'未知请求目标: {request_name}', color=RColor.yellow))
         return

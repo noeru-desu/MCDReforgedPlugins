@@ -5,13 +5,15 @@ from typing import Any, Optional
 
 from mcdreforged.api.types import PluginServerInterface, Info
 
-from . import shared
-from .command import register_commands
-from .config import Config
-from .websocket import WebSocketMessage, send_msg, ws_loop
-from .info_filter import CustomInfoFilter
-from .event import ArcEvent
-from .utils import tell_admin
+from arucraftr import shared
+from arucraftr.mcdr.command import register_commands
+from arucraftr.config import Config
+from arucraftr.websocket import send_msg
+from arucraftr.websocket.handler import WebSocketMessage, ws_loop
+from arucraftr.websocket.types import WebSocketMessage
+from arucraftr.mcdr.info_filter import CustomInfoFilter
+from arucraftr.websocket.event import ArcEvent
+from arucraftr.utils import tell_admin
 
 
 async def on_load(server: PluginServerInterface, prev_module: Optional[Any]):
