@@ -88,5 +88,6 @@ async def match_online_list(content: str):
     except (ValueError, AttributeError) as e:
         tell_admin(f'玩家列表解析失败, 匹配目标[{players_str}]: {repr(e)}')
     else:
-        await ArcEvent.update_player_list.report(player_list=[[i, i in bots] for i in players])
-        shared.plg_server_inst.logger.info(f'已上报玩家列表: {players}')
+        player_list = [[i, i in bots] for i in players]
+        await ArcEvent.update_player_list.report(player_list=player_list)
+        shared.plg_server_inst.logger.info(f'已上报玩家列表: {player_list}')
