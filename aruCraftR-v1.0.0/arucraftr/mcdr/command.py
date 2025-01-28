@@ -94,7 +94,7 @@ async def debug_event(src: CommandSource, ctx: dict):
         match event_name:
             case 'crash':
                 path = Path(ctx['other'])
-                if path.exists():
+                if not path.exists():
                     src.reply(RText(f'文件不存在: {path}', color=RColor.red))
                     return
                 await report_crash(path)
