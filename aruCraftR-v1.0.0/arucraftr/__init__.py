@@ -23,12 +23,17 @@ async def on_load(server: PluginServerInterface, prev_module: Optional[Any]):
     register_commands(server)
     if shared.config.info_filter: # type: ignore
         CustomInfoFilter.rebuild_filter_cache(shared.config.info_filter) # type: ignore
-        server.register_info_filter(CustomInfoFilter())
+        info_filter = shared.info_filter = CustomInfoFilter()
+        server.register_info_filter(info_filter)
+        if shared.config.auto_optimize_info_filter: # type: ignore
+            shared.info_filter_opti_future = asyncio.run_coroutine_threadsafe(info_filter.optimize_order_loop(), shared.plg_server_inst.get_event_loop())
     shared.ws_future = asyncio.run_coroutine_threadsafe(ws_loop(), shared.plg_server_inst.get_event_loop())
 
 
 async def on_unload(server: PluginServerInterface):
     shared.ws_future.cancel()
+    if shared.config.auto_optimize_info_filter:
+        shared.info_filter_opti_future.cancel()
     if shared.ws_connection is not None:
         await shared.ws_connection.close(reason='插件卸载')
 
