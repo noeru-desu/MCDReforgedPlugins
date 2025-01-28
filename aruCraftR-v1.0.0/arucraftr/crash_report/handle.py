@@ -68,4 +68,5 @@ def analyze_forge_crash_report(path: Path) -> OrderedDict[str, list[str]]:
                 if line.startswith('at') and (regex := traceback_re.match(line)) is not None:
                     line = regex['trace'].strip()
                 lines.append(line)
+    formated_crash_report.move_to_end('System Details')
     return formated_crash_report
