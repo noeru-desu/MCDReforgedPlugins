@@ -52,7 +52,7 @@ def analyze_forge_crash_report(path: Path) -> OrderedDict[str, list[str]]:
     shared.plg_server_inst.logger.warning(f'\n{'-'*30}\n\n{' '*4}正在处理崩溃日志, 请稍等\n\n{'-'*30}')
     formated_crash_report: OrderedDict[str, list] = OrderedDict(forge_pattern)
     for category, line in analyze_category(path):
-        if (lines := formated_crash_report.get(c)) is None:
+        if (lines := formated_crash_report.get(category)) is None:
             formated_crash_report[c] = [f'\n\n-- {category} --']
         match category:
             case 'System Details':
