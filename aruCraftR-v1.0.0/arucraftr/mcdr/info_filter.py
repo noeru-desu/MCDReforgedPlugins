@@ -64,7 +64,7 @@ class KeywordFilter:
     target: str
 
     def __call__(self, x: str) -> bool:
-        return x in self.target
+        return self.target in x
 
 
 @dataclass(slots=True)
@@ -114,7 +114,7 @@ class KeywordFilterWithCounter:
     count: int = 0
 
     def __call__(self, x: str) -> bool:
-        if x in self.target:
+        if self.target in x:
             self.count += 1
             return True
         return False
