@@ -9,6 +9,7 @@
         "noeru_desu"
     ],
     "link": "https://github.com/aruCraftR/MCDReforgedPlugins",
+    "entrypoint": "arucraftr.entry",
     "dependencies": {
         "mcdreforged": ">=2.14.3"
     }

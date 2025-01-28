@@ -9,7 +9,8 @@ from mcdreforged.api.rtext import RText, RColor, RTextList
 from mcdreforged.api.command import GreedyText, Literal, Text
 from mcdreforged.command.builder.tools import Requirements
 
-from arucraftr import shared, report_crash
+from arucraftr import shared
+from arucraftr.crash_report import report_crash
 from arucraftr.websocket.event import ArcEvent
 from arucraftr.websocket.handler import exec_json as _exec_json
 
