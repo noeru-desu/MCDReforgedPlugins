@@ -60,10 +60,12 @@ def analyze_forge_crash_report(path: Path) -> OrderedDict[str, list[str]]:
                 line = line.strip('|')
                 if (regex := forge_mod_re.match(line)) is None:
                     continue
-                lines.append(regex['name'].strip(' '))
+                mod_name = regex['name'].strip(' ')
+                if mod_name in lines:
+                    continue
+                # lines.append(mod_name)
             case c:
                 if line.startswith('at') and (regex := traceback_re.match(line)) is not None:
                     line = regex['trace'].strip()
-                    continue
                 lines.append(line)
     return formated_crash_report
