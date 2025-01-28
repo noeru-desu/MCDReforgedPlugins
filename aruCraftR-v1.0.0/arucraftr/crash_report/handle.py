@@ -25,7 +25,7 @@ def analyze_category(file_path: Path) -> Generator[tuple[str, str]]:
         line_num = 0
         while True:
             line_num += 1
-            line = f.readline()
+            line = f.readline().strip()
             if not line:
                 return
             if line_num <= SKIP_LINES or line.startswith('//'):
@@ -39,7 +39,7 @@ def analyze_category(file_path: Path) -> Generator[tuple[str, str]]:
                     continue
             if skiping:
                 continue
-            yield current_category, line.strip()
+            yield current_category, line
 
 
 forge_mod_re = re.compile(r'^(?P<file>[^\|]+)\|(?P<name>[^\|]+)\|(?P<namespace>[^\|]+)\|(?P<version>[^\|]+)\|(?P<other>[^\|]+)?')
@@ -53,7 +53,7 @@ def analyze_forge_crash_report(path: Path) -> OrderedDict[str, list[str]]:
     formated_crash_report: OrderedDict[str, list] = OrderedDict(forge_pattern)
     for category, line in analyze_category(path):
         if (lines := formated_crash_report.get(category)) is None:
-            formated_crash_report[category] = [f'\n\n-- {category} --']
+            lines = formated_crash_report[category] = [f'\n\n-- {category} --']
         match category:
             case 'System Details':
                 line = line.strip('|')
