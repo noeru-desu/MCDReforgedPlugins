@@ -40,7 +40,7 @@ class CustomInfoFilter(InfoFilter):
     def optimize_order(cls):
         if not shared.config.auto_optimize_info_filter:
             return
-        cls.filter_cache.sort(key=lambda x: x.count)
+        cls.filter_cache.sort(key=lambda x: x.count, reverse=True)
 
     @classmethod
     async def optimize_order_loop(cls):
