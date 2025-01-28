@@ -25,7 +25,10 @@ def analyze_category(file_path: Path) -> Generator[tuple[str, str]]:
         line_num = 0
         while True:
             line_num += 1
-            line = f.readline().strip()
+            line = f.readline()
+            if not line:
+                return
+            line = line.strip()
             if not line:
                 return
             if line_num <= SKIP_LINES or line.startswith('//'):
