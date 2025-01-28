@@ -29,9 +29,7 @@ def analyze_category(file_path: Path) -> Generator[tuple[str, str]]:
             if not line:
                 return
             line = line.strip()
-            if not line:
-                return
-            if line_num <= SKIP_LINES or line.startswith('//'):
+            if not line or line_num <= SKIP_LINES or line.startswith('//'):
                 continue
             if current_category is None and line.startswith('Description'):
                 current_category = 'Minecraft Crash Report'
