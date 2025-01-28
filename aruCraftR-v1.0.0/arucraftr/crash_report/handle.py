@@ -8,7 +8,7 @@ from arucraftr import shared
 
 
 SKIP_LINES = 2
-SKIP_CATEGORIES = {'Minecraft Crash Report', 'Thread Dump', 'Performance stats'}
+SKIP_CATEGORIES = {'Minecraft Crash Report', 'Thread Dump', 'Performance stats', 'Thread dumps'}
 
 forge_pattern = {
     'System Details': ['\n\n-- Mod list --']
