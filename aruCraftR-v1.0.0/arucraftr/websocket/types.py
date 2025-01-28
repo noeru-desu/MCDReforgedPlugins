@@ -14,7 +14,7 @@ class WebSocketMessage:
 
     @cached_property
     def json(self) -> str:
-        return jsonlib.dumps({'msg_type': self.msg_type, 'content': self.content}, separators=(',', ':'), ensure_ascii=False)
+        return jsonlib.dumps({'msg_type': self.msg_type, 'content': self.content}, sort_keys=False, separators=(',', ':'), ensure_ascii=False)
 
 
 class RequestTypes:

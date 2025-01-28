@@ -69,6 +69,10 @@ class ArcEvent(Enum):
         'update_player_list', OrderedDict(player_list=[]),
         {'player_list': [('测试', True)]}
     )
+    crash = WsEvent(
+        'crash', OrderedDict(crash_report=OrderedDict()),
+        {'crash_report': OrderedDict()}
+    )
 
     @classmethod
     def get(cls, name: str) -> Optional['ArcEvent']:

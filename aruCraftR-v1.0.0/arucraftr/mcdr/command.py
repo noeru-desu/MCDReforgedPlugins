@@ -1,6 +1,7 @@
 
 import json as jsonlib
 
+from pathlib import Path
 import re
 from traceback import format_exc
 from mcdreforged.api.types import PluginServerInterface, CommandSource
@@ -8,7 +9,7 @@ from mcdreforged.api.rtext import RText, RColor, RTextList
 from mcdreforged.api.command import GreedyText, Literal, Text
 from mcdreforged.command.builder.tools import Requirements
 
-from arucraftr import shared
+from arucraftr import shared, report_crash
 from arucraftr.websocket.event import ArcEvent
 from arucraftr.websocket.handler import exec_json as _exec_json
 
@@ -47,7 +48,7 @@ def register_commands(server: PluginServerInterface):
         ).
         then(
             Literal('debug').runs(lambda src: src.reply(DEBUG_HELP)).
-            then(Literal('event').then(Text('event_name').runs(debug_event)))
+            then(Literal('event').then(Text('event_name').runs(debug_event).then(GreedyText('other').runs(debug_event))))
         ).
         then(
             console_literal('exec').
@@ -87,14 +88,24 @@ def print_filter_count(src: CommandSource):
 
 
 async def debug_event(src: CommandSource, ctx: dict):
+    event_name = ctx['event_name']
     try:
-        if (event := ArcEvent.get(ctx['event_name'])) is None:
-            src.reply(RText(f'事件ID不存在: {ctx['event_name']}', color=RColor.red))
-        await event.debug_report()
+        match event_name:
+            case 'crash':
+                path = Path(ctx['other'])
+                if path.exists():
+                    src.reply(RText(f'文件不存在: {path}', color=RColor.red))
+                    return
+                await report_crash(path)
+            case _:
+                if (event := ArcEvent.get(event_name)) is None:
+                    src.reply(RText(f'事件ID不存在: {event_name}', color=RColor.red))
+                    return
+                await event.debug_report()
     except Exception:
         src.reply(RText(f'出现错误: {format_exc(limit=5)}', color=RColor.red))
     else:
-        src.reply(RText(f'已发送事件{ctx['event_name']}', color=RColor.green))
+        src.reply(RText(f'已发送事件{event_name}', color=RColor.green))
 
 
 def exec_json(src: CommandSource, ctx: dict):

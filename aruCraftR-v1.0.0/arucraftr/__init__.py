@@ -1,5 +1,6 @@
 
 import asyncio
+from pathlib import Path
 import re
 from typing import Any, Optional
 
@@ -13,6 +14,7 @@ from arucraftr.websocket.handler import WebSocketMessage, ws_loop
 from arucraftr.websocket.types import WebSocketMessage
 from arucraftr.mcdr.info_filter import CustomInfoFilter
 from arucraftr.websocket.event import ArcEvent
+from arucraftr.crash_report.handle import analyze_forge_crash_report
 from arucraftr.utils import tell_admin
 
 
@@ -75,14 +77,16 @@ async def on_player_left(server: PluginServerInterface, player: str):
     await ArcEvent.player_left.report(player=player)
 
 
-
-list_re = re.compile(r'There are \d+ of a max of \d+ players online: (?P<players>.+)')
-
 async def on_info(server: PluginServerInterface, info: Info):
     if (not info.is_from_server) or info.content is None:
         return
     if info.content.startswith('There'):
         await match_online_list(info.content)
+    if info.content.startswith('This') or info.content.startswith('Crash'):
+        await match_crash_report(info.content)
+
+
+list_re = re.compile(r'There are \d+ of a max of \d+ players online: (?P<players>.+)')
 
 
 async def match_online_list(content: str):
@@ -96,3 +100,28 @@ async def match_online_list(content: str):
     else:
         await ArcEvent.update_player_list.report(player_list=[[i, i in bots] for i in players])
         shared.plg_server_inst.logger.info(f'已上报玩家列表: {players}')
+
+
+crash_re_backup = re.compile(r'This crash report has been saved to: (?P<path>.+)')
+
+
+async def match_crash_report(content: str):
+    if not content.startswith('This crash report has'):
+        return
+    path = Path(content.split(':', 2)[-1])
+    if not path.exists():
+        if (regex := crash_re_backup.match(content)) is None:
+            return
+        path = Path(regex['path'])
+        if not path.exists():
+            return
+    await report_crash(path)
+
+
+async def report_crash(path: Path):
+    match shared.plg_server_inst.get_mcdr_config()['handler']:
+        case 'vanilla_handler':
+            pass
+        case 'forge_handler':
+            crash_report = analyze_forge_crash_report(path)
+    await ArcEvent.crash.report(crash_report=crash_report)
